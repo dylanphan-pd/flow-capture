@@ -1,0 +1,431 @@
+<style>
+  /* Flow Capture panel — matches the "Frame 12 / 13 / 14" specs in the design file (320 × 480).
+     Tokens come from the design variables; Inter replaces Google Sans. */
+  :root {
+    --primary: #006ad9;            /* colorPrimary, color/foreground/brand/primary/medium/default */
+    --text: rgba(0,0,0,.88);       /* colorText */
+    --fg: #1a1a1a;                 /* color/foreground/neutral/primary/default */
+    --fg-tertiary: #808080;        /* color/foreground/neutral/tertiary/default */
+    --border: #d9d9d9;             /* colorBorder */
+    --bg-secondary: #f7f7f7;       /* color/background/neutral/secondary/default */
+    --success: #00bf1a;            /* colorSuccessBase */
+    --error: #ff4d4f;
+    --warning: #faad14;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { font: 400 14px/22px Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif; letter-spacing: 0; color: var(--text); background: #fff; }
+  button { font: inherit; letter-spacing: 0; cursor: pointer; }
+  [hidden] { display: none !important; }
+
+  #app { display: flex; flex-direction: column; width: 320px; height: 480px; background: #fff; }
+  main { flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; align-items: stretch; }
+  main { scrollbar-width: none; }
+  main::-webkit-scrollbar { display: none; }   /* scrolls with wheel / trackpad, but never narrows the 288px content column */
+  .stack { display: flex; flex-direction: column; gap: 16px; }
+
+  /* Header: "Flow Capture" + Layout text button */
+  .top { display: flex; align-items: baseline; justify-content: space-between; }
+  .top h1 { margin: 0; font: 600 20px/28px Inter, system-ui, sans-serif; color: var(--primary); }
+  .text-btn { display: flex; align-items: center; gap: 4px; padding: 0; border: 0; background: none; color: var(--fg-tertiary); }
+  .text-btn.md { font: 500 14px/22px Inter, system-ui, sans-serif; }
+  .text-btn.sm { font: 500 12px/18px Inter, system-ui, sans-serif; }
+  .text-btn:hover { color: var(--fg); }
+  .text-btn img { width: 16px; height: 16px; display: block; }
+
+  /* Cards */
+  .card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 8px; border-radius: 8px; background: var(--bg-secondary); }
+  .card.empty { border: 1px dashed var(--border); text-align: center; }
+  .card.empty .emoji { font: 600 36px/44px Inter, system-ui, sans-serif; color: var(--fg); }
+  .card.empty .title { font: 400 14px/22px Inter, system-ui, sans-serif; color: var(--fg); }
+  .card.empty .sub { font: 400 12px/18px Inter, system-ui, sans-serif; color: var(--fg-tertiary); }
+  .card.layout { align-items: stretch; justify-content: flex-start; }
+
+  /* Switch (28 × 16, handle 12) */
+  .row-between { display: flex; align-items: center; justify-content: space-between; }
+  .switch { position: relative; width: 28px; height: 16px; flex: none; }
+  .switch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+  .switch .track { position: absolute; inset: 0; border-radius: 100px; background: rgba(0,0,0,.25); transition: background .15s; pointer-events: none; }
+  .switch .handle { position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 9px; background: #fff; box-shadow: 0 2px 4px rgba(0,35,11,.2); transition: left .15s; }
+  .switch input:checked ~ .track { background: var(--primary); }
+  .switch input:checked ~ .handle { left: 14px; }
+
+  /* Form item: label + input (32 high, 6 radius, "px" suffix) */
+  .form-item .label { padding-bottom: 4px; }
+  .input { display: flex; align-items: center; height: 32px; padding: 0 11px; border: 1px solid var(--border); border-radius: 6px; background: #fff; }
+  .input:focus-within { border-color: var(--primary); }
+  .input input { flex: 1; min-width: 0; width: 100%; border: 0; outline: 0; background: none; padding: 0; font: 400 14px/22px Inter, system-ui, sans-serif; color: var(--text); -moz-appearance: textfield; }
+  .input input::-webkit-outer-spin-button, .input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .input .suffix { color: var(--text); }
+
+  /* Heading + flow rows */
+  h2 { margin: 0; font: 500 16px/24px Inter, system-ui, sans-serif; color: var(--fg); }
+  .flows { display: flex; flex-direction: column; gap: 8px; }
+  .flow-row { display: flex; align-items: flex-start; }
+  .flow-row .cb { height: 24px; display: flex; align-items: center; }
+  .flow-row .name-cell { flex: 1; min-width: 0; padding-left: 8px; display: flex; gap: 4px; }
+  .small-input { flex: 1; min-width: 0; height: 24px; padding: 0 7px; border: 1px solid var(--border); border-radius: 4px; background: #fff; font: 400 14px/22px Inter, system-ui, sans-serif; color: var(--text); outline: 0; }
+  .small-input:focus { border-color: var(--primary); }
+  .icon-btn { flex: none; min-width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; padding: 0; border: 1px solid transparent; border-radius: 4px; background: none; }
+  .icon-btn:hover { background: rgba(0,0,0,.06); }
+  .icon-btn img { width: 14px; height: 14px; display: block; }
+  .icon-btn.confirm { padding: 0 6px; color: var(--error); font: 500 12px/18px Inter, system-ui, sans-serif; }
+
+  /* Checkbox (16 box, radius 4; label padded 8) */
+  label.check { display: flex; align-items: flex-start; cursor: pointer; }
+  label.check input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .box { flex: none; width: 16px; height: 16px; margin-top: 3px; border: 1px solid var(--border); border-radius: 4px; background: #fff; }
+  input:checked + .box { background: var(--primary) url("data:image/svg+xml,%3Csvg%20preserveAspectRatio%3D%22none%22%20overflow%3D%22visible%22%20style%3D%22display%3A%20block%3B%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cg%20id%3D%22CheckOutlined%22%3E%0A%3Cpath%20id%3D%22Vector%22%20d%3D%22M4.775%207.575L9.0125%203.3375C9.1125%203.2375%209.22917%203.1875%209.3625%203.1875C9.49583%203.1875%209.6125%203.2375%209.7125%203.3375C9.8125%203.4375%209.8625%203.55625%209.8625%203.69375C9.8625%203.83125%209.8125%203.95%209.7125%204.05L5.125%208.65C5.025%208.75%204.90833%208.8%204.775%208.8C4.64167%208.8%204.525%208.75%204.425%208.65L2.275%206.5C2.175%206.4%202.12708%206.28125%202.13125%206.14375C2.13542%206.00625%202.1875%205.8875%202.2875%205.7875C2.3875%205.6875%202.50625%205.6375%202.64375%205.6375C2.78125%205.6375%202.9%205.6875%203%205.7875L4.775%207.575Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E") center / 12px 12px no-repeat; border-color: var(--primary); }
+  /* Inter is ~6% wider than the design's Google Sans; slight tracking keeps this long label on one line like the design. */
+  label.check .lbl { padding: 0 8px; white-space: nowrap; letter-spacing: -.28px; }
+  .cb .box { margin-top: 0; }
+
+  /* Place button (40 high, radius 8) + auto-place checkbox */
+  .actions { display: flex; flex-direction: column; gap: 8px; }
+  button.primary { height: 40px; width: 100%; padding: 0 15px; border: 1px solid transparent; border-radius: 8px; background: var(--primary); color: #fff; font: 500 16px/24px Inter, system-ui, sans-serif; }
+  button.primary:disabled { opacity: .45; cursor: default; }
+  #warn { display: none; color: var(--error); font: 400 12px/18px Inter, system-ui, sans-serif; cursor: pointer; }
+
+  /* Divider (32 high) and History */
+  .divider { display: block; width: 100%; height: 32px; flex: none; }
+  .hist-head { display: flex; align-items: baseline; justify-content: space-between; }
+  #history { display: flex; flex-direction: column; gap: 4px; }
+  .hist-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .hist-row .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hist-row .acts { display: flex; align-items: center; gap: 8px; flex: none; }
+  .hist-row .x { opacity: 0; transition: opacity .1s; }
+  .hist-row:hover .x, .hist-row .x.confirm { opacity: 1; }
+  .hist-row .x.confirm { color: var(--error); }
+  .hist-more { align-self: flex-start; margin-top: 4px; }
+  .hist-empty { color: var(--fg-tertiary); font: 400 12px/18px Inter, system-ui, sans-serif; }
+
+  /* Footer: connection state + Change / Sign out */
+  footer { flex: none; background: var(--bg-secondary); padding: 8px 16px; min-height: 38px; }
+  .conn { display: flex; align-items: center; justify-content: space-between; }
+  .badge { display: flex; align-items: center; }
+  .dot { width: 6px; height: 6px; border-radius: 8px; background: #bfbfbf; box-shadow: 0 0 0 1px #fff; flex: none; }
+  .dot.ok { background: var(--success); } .dot.warn { background: var(--warning); } .dot.bad { background: var(--error); }
+  .badge .txt { padding-left: 8px; }
+  .links { display: flex; gap: 8px; align-items: center; }
+  #token { display: none; width: 100%; height: 24px; margin-top: 6px; padding: 0 7px; border: 1px solid var(--border); border-radius: 4px; background: #fff; font: 400 12px/18px Inter, system-ui, sans-serif; color: var(--text); outline: 0; }
+  #token:focus { border-color: var(--primary); }
+</style>
+
+<div id="app">
+  <main>
+    <div class="stack">
+      <div class="top">
+        <h1>Flow Capture</h1>
+        <button class="text-btn md" id="layoutBtn" type="button"><span>Layout</span><img id="layoutChevron" alt="" /></button>
+      </div>
+
+      <div class="card layout" id="layoutCard" hidden>
+        <div class="row-between">
+          <span>Wrap each flow in a section</span>
+          <label class="switch"><input id="wrap" type="checkbox" /><span class="track"></span><span class="handle"></span></label>
+        </div>
+        <div class="form-item">
+          <div class="label">Gap between steps</div>
+          <div class="input"><input id="gap" type="number" min="0" step="20" /><span class="suffix">px</span></div>
+        </div>
+        <div class="form-item">
+          <div class="label">Gap between flows</div>
+          <div class="input"><input id="flowGap" type="number" min="0" step="20" /><span class="suffix">px</span></div>
+        </div>
+      </div>
+
+      <div id="flowsBlock" class="stack" hidden>
+        <h2>Available Flow(s)</h2>
+        <div class="flows" id="flows"></div>
+      </div>
+
+      <div class="card empty" id="empty">
+        <div class="emoji">📭</div>
+        <div style="width:100%">
+          <div class="title" id="emptyTitle">None yet</div>
+          <div class="sub" id="emptySub">Capture a flow in the app first.</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="place" class="primary" type="button" disabled>Place flow(s)</button>
+        <label class="check"><input id="auto" type="checkbox" /><span class="box"></span><span class="lbl">Place automatically when a flow is finish</span></label>
+        <div id="warn" title="Click to dismiss"></div>
+      </div>
+    </div>
+
+    <img class="divider" id="divider" alt="" />
+
+    <div class="hist-head">
+      <h2 id="historyTitle">History (0)</h2>
+      <button class="text-btn md" id="historyBtn" type="button">Show</button>
+    </div>
+    <div id="history" hidden></div>
+  </main>
+
+  <footer>
+    <div class="conn">
+      <div class="badge"><span class="dot" id="dot"></span><span class="txt" id="status">Not connected</span></div>
+      <div class="links">
+        <button class="text-btn sm" id="change" type="button">Change</button>
+        <button class="text-btn sm" id="signout" type="button">Sign out</button>
+      </div>
+    </div>
+    <input id="token" type="password" placeholder="Paste connection token (Mac app → Settings → Copy Connection Token)" />
+  </footer>
+</div>
+
+<script>
+  // Icons are the exact exports from the design (KeyboardArrowDown/Up, RemoveFilled, Divider).
+  const ICON = {
+    down: "data:image/svg+xml,%3Csvg%20preserveAspectRatio%3D%22none%22%20overflow%3D%22visible%22%20style%3D%22display%3A%20block%3B%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cg%20id%3D%22KeyboardArrowDownOutlined%22%3E%0A%3Cpath%20id%3D%22Vector%22%20d%3D%22M7.75%209.94167C7.67222%209.91389%207.6%209.86667%207.53333%209.8L4.46667%206.73333C4.34444%206.61111%204.28333%206.45556%204.28333%206.26667C4.28333%206.07778%204.34444%205.92222%204.46667%205.8C4.58889%205.67778%204.74444%205.61667%204.93333%205.61667C5.12222%205.61667%205.27778%205.67778%205.4%205.8L8%208.4L10.6%205.8C10.7222%205.67778%2010.8778%205.61667%2011.0667%205.61667C11.2556%205.61667%2011.4111%205.67778%2011.5333%205.8C11.6556%205.92222%2011.7167%206.07778%2011.7167%206.26667C11.7167%206.45556%2011.6556%206.61111%2011.5333%206.73333L8.46667%209.8C8.4%209.86667%208.32778%209.91389%208.25%209.94167C8.17222%209.96944%208.08889%209.98333%208%209.98333C7.91111%209.98333%207.82778%209.96944%207.75%209.94167Z%22%20fill%3D%22%23808080%22%2F%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E", up: "data:image/svg+xml,%3Csvg%20preserveAspectRatio%3D%22none%22%20overflow%3D%22visible%22%20style%3D%22display%3A%20block%3B%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cg%20id%3D%22KeyboardArrowUpOutlined%22%3E%0A%3Cpath%20id%3D%22Vector%22%20d%3D%22M8%207.2L5.4%209.8C5.27778%209.92222%205.12222%209.98333%204.93333%209.98333C4.74444%209.98333%204.58889%209.92222%204.46667%209.8C4.34444%209.67778%204.28333%209.52222%204.28333%209.33333C4.28333%209.14444%204.34444%208.98889%204.46667%208.86667L7.53333%205.8C7.66667%205.66667%207.82222%205.6%208%205.6C8.17778%205.6%208.33333%205.66667%208.46667%205.8L11.5333%208.86667C11.6556%208.98889%2011.7167%209.14444%2011.7167%209.33333C11.7167%209.52222%2011.6556%209.67778%2011.5333%209.8C11.4111%209.92222%2011.2556%209.98333%2011.0667%209.98333C10.8778%209.98333%2010.7222%209.92222%2010.6%209.8L8%207.2Z%22%20fill%3D%22%23808080%22%2F%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E", minus: "data:image/svg+xml,%3Csvg%20preserveAspectRatio%3D%22none%22%20overflow%3D%22visible%22%20style%3D%22display%3A%20block%3B%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2014%2014%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cg%20id%3D%22RemoveFilled%22%3E%0A%3Cpath%20id%3D%22Vector%22%20d%3D%22M3.5%207.58333C3.33472%207.58333%203.19618%207.52743%203.08438%207.41562C2.97257%207.30382%202.91667%207.16528%202.91667%207C2.91667%206.83472%202.97257%206.69618%203.08438%206.58437C3.19618%206.47257%203.33472%206.41667%203.5%206.41667H10.5C10.6653%206.41667%2010.8038%206.47257%2010.9156%206.58437C11.0274%206.69618%2011.0833%206.83472%2011.0833%207C11.0833%207.16528%2011.0274%207.30382%2010.9156%207.41562C10.8038%207.52743%2010.6653%207.58333%2010.5%207.58333H3.5Z%22%20fill%3D%22black%22%20fill-opacity%3D%220.88%22%2F%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E", divider: "data:image/svg+xml,%3Csvg%20preserveAspectRatio%3D%22none%22%20overflow%3D%22visible%22%20style%3D%22display%3A%20block%3B%22%20width%3D%22600%22%20height%3D%2232%22%20viewBox%3D%220%200%20600%2032%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cg%20id%3D%22Divider%2FHoriztontal%22%3E%0A%3Cline%20id%3D%22divider%22%20y1%3D%2215.5%22%20x2%3D%22600%22%20y2%3D%2215.5%22%20stroke%3D%22%23EEEFF1%22%2F%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E",
+  };
+  const BASE = 'http://localhost:47653';
+  const $ = (id) => document.getElementById(id);
+  const inFlight = new Set();
+  const PAGE = 20;
+  let token = '', stickySize = null, configDirty = true;
+  let ready = [];            // waiting flows: { id, name, original, steps, selected, confirmDelete }
+  let historyFlows = [];     // placed flows: { id, name, steps, confirmDelete }
+  let historyLimit = PAGE, historySig = '';
+
+  const defaults = { gap: 200, flowGap: 120, wrap: true, auto: false };
+  const num = (id, fallback) => { const v = parseFloat($(id).value); return Number.isFinite(v) && v >= 0 ? v : fallback; };
+  const settings = () => ({ gap: num('gap', defaults.gap), flowGap: num('flowGap', defaults.flowGap), wrap: $('wrap').checked, auto: $('auto').checked });
+  const api = (path, method = 'GET') => fetch(`${BASE}${path}${path.includes('?') ? '&' : '?'}t=${token}`, { method });
+  const showWarn = (text) => { $('warn').style.display = 'block'; $('warn').textContent = text; };
+  $('warn').onclick = () => { $('warn').style.display = 'none'; };
+
+  $('divider').src = ICON.divider;
+  ['gap', 'flowGap', 'wrap', 'auto'].forEach((id) => $(id).addEventListener('change', () => {
+    parent.postMessage({ pluginMessage: { type: 'save-settings', settings: settings() } }, '*');
+  }));
+
+  // ---- Layout accordion + History toggle -------------------------------------------------------------------------------
+  let layoutOpen = false, historyOpen = false;
+  function renderToggles() {
+    $('layoutCard').hidden = !layoutOpen;
+    $('layoutChevron').src = layoutOpen ? ICON.up : ICON.down;
+    $('history').hidden = !historyOpen;
+    $('historyBtn').textContent = historyOpen ? 'Hide' : 'Show';
+  }
+  $('layoutBtn').onclick = () => { layoutOpen = !layoutOpen; renderToggles(); };
+  $('historyBtn').onclick = () => { historyOpen = !historyOpen; renderToggles(); };
+
+  // ---- Connection (footer) ---------------------------------------------------------------------------------------------
+  function setConn(state) {
+    const text = { notoken: 'Not connected', checking: 'Connecting…', ok: 'Connected',
+      rejected: 'Token rejected', down: 'App not running' }[state];
+    const cls = { ok: 'ok', checking: '', notoken: '', rejected: 'bad', down: 'warn' }[state];
+    $('status').textContent = text; $('dot').className = 'dot ' + cls;
+    $('change').hidden = !token; $('signout').hidden = !token;
+    if (state === 'notoken' || state === 'rejected') $('token').style.display = 'block';
+    else if (state === 'ok') $('token').style.display = 'none';
+    renderEmpty();
+  }
+  $('token').addEventListener('change', () => {
+    token = $('token').value.trim();
+    parent.postMessage({ pluginMessage: { type: 'save-token', token } }, '*');
+    setConn(token ? 'checking' : 'notoken');
+    poll();
+  });
+  $('change').onclick = () => { $('token').style.display = 'block'; $('token').focus(); };
+  $('signout').onclick = () => {
+    token = ''; $('token').value = '';
+    parent.postMessage({ pluginMessage: { type: 'save-token', token: '' } }, '*');
+    ready = []; historyFlows = []; historySig = ''; inFlight.clear();
+    setConn('notoken'); render(); renderHistory();
+  };
+
+  function renderEmpty() {
+    $('emptyTitle').textContent = token ? 'None yet' : 'Not connected';
+    $('emptySub').textContent = token ? 'Capture a flow in the app first.' : 'Paste your connection token below.';
+  }
+
+  // ---- Available flows ---------------------------------------------------------------------------------------------------
+  function checkbox(checked, onChange) {
+    const l = document.createElement('label'); l.className = 'check';
+    const i = document.createElement('input'); i.type = 'checkbox'; i.checked = checked; i.onchange = () => onChange(i.checked);
+    const b = document.createElement('span'); b.className = 'box';
+    l.append(i, b);
+    return l;
+  }
+
+  function render() {
+    const box = $('flows');
+    box.innerHTML = '';
+    for (const f of ready) {
+      const row = document.createElement('div'); row.className = 'flow-row';
+      const cb = document.createElement('div'); cb.className = 'cb';
+      cb.append(checkbox(f.selected, (v) => { f.selected = v; render(); }));
+      const cell = document.createElement('div'); cell.className = 'name-cell';
+      const name = document.createElement('input'); name.type = 'text'; name.className = 'small-input'; name.value = f.name;
+      name.oninput = () => { f.name = name.value; };
+      cell.append(name, deleteButton(f, () => discard(f)));
+      row.append(cb, cell);
+      box.append(row);
+    }
+    $('flowsBlock').hidden = ready.length === 0;
+    $('empty').hidden = ready.length > 0;
+    $('place').disabled = !ready.some((f) => f.selected);
+    renderEmpty();
+  }
+
+  // The minus button becomes "Delete?" for 3 seconds; a second click inside that window confirms.
+  function deleteButton(f, onConfirm, rerender = render) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'icon-btn' + (f.confirmDelete ? ' confirm' : '');
+    b.title = 'Delete from the Mac app too';
+    if (f.confirmDelete) b.textContent = 'Delete?';
+    else { const im = document.createElement('img'); im.alt = ''; im.src = ICON.minus; b.append(im); }
+    b.onclick = () => {
+      if (f.confirmDelete) return onConfirm();
+      f.confirmDelete = true; rerender();
+      setTimeout(() => { if (f.confirmDelete) { f.confirmDelete = false; rerender(); } }, 3000);
+    };
+    return b;
+  }
+
+  async function discard(f) {
+    try {
+      const res = await api(`/flows/${f.id}/discard`, 'POST');
+      if (!res.ok) throw new Error(String(res.status));
+    } catch (err) { f.confirmDelete = false; render(); showWarn('Could not delete — is the Mac app running?'); return; }
+    for (const s of f.steps) inFlight.delete(s.id);
+    ready = ready.filter((x) => x !== f);
+    render();
+  }
+
+  function place() {
+    const picked = ready.filter((f) => f.selected);
+    for (const f of picked) {
+      const name = f.name.trim() || 'Flow';
+      // Keep the Mac app's history in step with the name used in FigJam.
+      if (name !== f.original) api(`/flows/${f.id}/rename?name=${encodeURIComponent(name)}`, 'POST').catch(() => {});
+      parent.postMessage({ pluginMessage: { type: 'flow', steps: f.steps, name, ...settings() } }, '*');
+    }
+    ready = ready.filter((f) => !f.selected);
+    render();
+  }
+  $('place').addEventListener('click', place);
+
+  // ---- History ---------------------------------------------------------------------------------------------------------
+  // Placed flows are kept on the Mac until cleared. Only metadata is loaded here; images are fetched on re-place.
+  async function loadHistory() {
+    const items = await (await api('/history')).json();
+    const sig = items.map((c) => c.id + (c.flowName || '')).join();
+    if (sig === historySig) return;
+    historySig = sig;
+    const flows = new Map();
+    for (const c of items) {
+      if (!flows.has(c.flowID)) flows.set(c.flowID, { id: c.flowID, name: c.flowName || 'Flow', steps: [] });
+      flows.get(c.flowID).steps.push(c);
+    }
+    historyFlows = [...flows.values()].map((f) => { f.steps.sort((a, b) => a.createdAt.localeCompare(b.createdAt)); return f; })
+      .sort((a, b) => b.steps[0].createdAt.localeCompare(a.steps[0].createdAt));
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const shown = historyFlows.slice(0, historyLimit);
+    $('historyTitle').textContent = `History (${historyFlows.length})`;
+    const box = $('history');
+    box.innerHTML = shown.length ? '' : '<div class="hist-empty">Nothing placed yet.</div>';
+    for (const f of shown) {
+      const row = document.createElement('div'); row.className = 'hist-row';
+      const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = f.name; nm.title = f.name;
+      const acts = document.createElement('div'); acts.className = 'acts';
+      const x = document.createElement('button'); x.type = 'button'; x.className = 'text-btn sm x' + (f.confirmDelete ? ' confirm' : '');
+      x.textContent = f.confirmDelete ? 'Delete?' : '✕'; x.title = 'Delete from the Mac app too';
+      x.onclick = () => {
+        if (f.confirmDelete) return deleteHistory(f);
+        f.confirmDelete = true; renderHistory();
+        setTimeout(() => { if (f.confirmDelete) { f.confirmDelete = false; renderHistory(); } }, 3000);
+      };
+      const re = document.createElement('button'); re.type = 'button'; re.className = 'text-btn sm'; re.textContent = 'Re-place';
+      re.onclick = async () => {
+        re.textContent = '…';
+        const steps = [];
+        for (const c of f.steps) {
+          const buf = await (await api(`/captures/${c.id}.png`)).arrayBuffer();
+          steps.push({ id: c.id, createdAt: c.createdAt, annotations: c.annotations, width: c.width, height: c.height, bytes: new Uint8Array(buf) });
+        }
+        parent.postMessage({ pluginMessage: { type: 'flow', steps, name: f.name, ...settings() } }, '*');
+        re.textContent = 'Re-place';
+      };
+      acts.append(x, re);
+      row.append(nm, acts);
+      box.append(row);
+    }
+    if (historyFlows.length > shown.length) {
+      const more = document.createElement('button'); more.type = 'button'; more.className = 'text-btn sm hist-more';
+      more.textContent = `Show older (${historyFlows.length - shown.length} more)`;
+      more.onclick = () => { historyLimit += PAGE; renderHistory(); };
+      box.append(more);
+    }
+  }
+
+  async function deleteHistory(f) {
+    try {
+      const res = await api(`/flows/${f.id}/delete`, 'POST');
+      if (!res.ok) throw new Error(String(res.status));
+    } catch (err) { f.confirmDelete = false; renderHistory(); showWarn('Could not delete — is the Mac app running?'); return; }
+    historySig = '';
+    await loadHistory();
+  }
+
+  // ---- Messages from the plugin code ---------------------------------------------------------------------------------
+  onmessage = (e) => {
+    const msg = e.data.pluginMessage;
+    if (msg.type === 'token') { token = msg.token || ''; $('token').value = token; setConn(token ? 'checking' : 'notoken'); render(); }
+    if (msg.type === 'settings') {
+      const s = { ...defaults, ...(msg.settings || {}) };
+      $('gap').value = s.gap; $('flowGap').value = s.flowGap; $('wrap').checked = s.wrap; $('auto').checked = s.auto;
+    }
+    if (msg.type === 'warnings') showWarn('Not applied: ' + msg.list.join('; '));
+    if (msg.type === 'sticky-size') { stickySize = msg; configDirty = true; }
+    if (msg.type === 'placed') api(`/captures/${msg.id}/ack`, 'POST').finally(() => inFlight.delete(msg.id));
+  };
+
+  // ---- Polling -------------------------------------------------------------------------------------------------------
+  async function poll() {
+    if (!token) return;
+    try {
+      if (stickySize && configDirty) {
+        const c = stickySize.color ? `&c=${encodeURIComponent(stickySize.color)}` : '';
+        await api(`/config?w=${stickySize.w}&h=${stickySize.h}${c}`, 'POST');
+        configDirty = false;
+      }
+      const res = await api('/captures');
+      if (res.status === 401) { setConn('rejected'); return; }
+      setConn('ok');
+      loadHistory().catch(() => {});
+
+      const flows = new Map();
+      for (const c of await res.json()) {
+        if (inFlight.has(c.id)) continue;
+        inFlight.add(c.id);
+        const buf = await (await api(`/captures/${c.id}.png`)).arrayBuffer();
+        if (!flows.has(c.flowID)) flows.set(c.flowID, { name: c.flowName, steps: [] });
+        flows.get(c.flowID).steps.push({ id: c.id, createdAt: c.createdAt, annotations: c.annotations,
+                                         width: c.width, height: c.height, bytes: new Uint8Array(buf) });
+      }
+      const fresh = [...flows.entries()].map(([id, f]) => {
+        f.steps.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+        const name = f.name || 'Flow';
+        return { id, name, original: name, steps: f.steps, selected: true };
+      });
+      fresh.sort((a, b) => a.steps[0].createdAt.localeCompare(b.steps[0].createdAt));
+      ready.push(...fresh);
+      if (fresh.length) render();   // don't redraw on idle polls: it would steal focus while renaming
+      if (fresh.length && $('auto').checked) place();
+    } catch (err) {
+      setConn('down');
+    }
+  }
+  renderToggles();
+  setConn('notoken');
+  render();
+  renderHistory();
+  setInterval(poll, 2000);
+  setTimeout(poll, 400);
+</script>

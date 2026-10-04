@@ -1,0 +1,13 @@
+{
+  "name": "Flow Capture Receiver",
+  "id": "0000000000000000000",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figjam"],
+  "networkAccess": {
+    "allowedDomains": ["none"],
+    "devAllowedDomains": ["http://localhost:47653"],
+    "reasoning": "Receives screenshots from the Flow Capture Mac app running on this machine."
+  }
+}
