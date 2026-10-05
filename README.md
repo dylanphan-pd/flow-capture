@@ -123,3 +123,7 @@ Capture as many steps as you like — the menu bar icon shows the count. When th
   - Closes the CRUD gaps from the code review (no per-step delete, no discarding a flow, no rename after finish).
 - Code review follow-ups, suggested order: Screen Recording permission check with a clear message → per-step delete / undo last capture → plugin error handling (per-step try/catch + notify). Other review findings (placement overlap, wrong web area choice, atomic index writes, stale preset warning, Esc-cancel confirmation, accessibility side effect in Chromium) are listed in the review report. Done already: hotkeys are ignored while the overlay is open; fullscreen browsers are no longer mistaken for clean windows.
 - Copy a flow to the clipboard (images + notes) to paste into Confluence / Google Docs. Not sure yet whether it is needed; would sit next to "Finish Flow → FigJam".
+
+## License
+
+[MIT](LICENSE) © 2026 Phong Phan
