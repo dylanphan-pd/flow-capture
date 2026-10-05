@@ -2,6 +2,39 @@
 
 macOS menu bar app for capturing UX flow steps, plus a FigJam plugin that receives them.
 
+## Quick start (for testers)
+
+> Early test version. Expect rough edges, and please tell me what breaks (see *Feedback* below).
+
+**You need:** a Mac on macOS 13 or later, the [Figma desktop app](https://www.figma.com/downloads/) (the plugin is imported from a file, which only works in the desktop app), and Apple's free command line tools: run `xcode-select --install` once if you've never built anything on this Mac.
+
+**1. Build and install the Mac app**
+```
+git clone https://github.com/dylanphan-pd/flow-capture.git
+cd flow-capture
+./scripts/build-app.sh
+```
+```
+cp -R "dist/Flow Capture.app" /Applications/ && open "/Applications/Flow Capture.app"
+```
+A camera icon appears in the menu bar (there is no Dock icon). *Build it yourself rather than downloading someone else's build: an app you build on your own Mac opens without warnings.*
+
+**2. Allow permissions (once).** Press **⌥1** to capture. macOS asks for *Screen Recording*: switch on **Flow Capture** in System Settings → Privacy & Security → Screen Recording, then quit the app from its menu and open it again. Window resizing separately asks for *Accessibility*.
+
+**3. Add the FigJam plugin.** In the Figma desktop app, open any FigJam board → *Plugins* → *Development* → *Import plugin from manifest…* → choose `figjam-plugin/manifest.json` from the folder you cloned.
+
+**4. Pair the two.** In the Mac app's menu: *Settings…* → *Copy Connection Token*. Run the plugin (*Plugins* → *Development* → *Flow Capture Receiver*) and paste the token. The footer turns green and says *Connected*.
+
+**5. Try a flow.** Press **⌥1** on any app or browser window, add a sticky (`S`) or arrow (`A`), press **⏎**. Repeat for a few steps, then **⌥3** to finish the flow. In FigJam press **Place flow(s)**.
+
+**Troubleshooting**
+- *Screenshot shows only the wallpaper* → Screen Recording isn't allowed yet (step 2), or you haven't reopened the app since allowing it.
+- *Plugin says "Flow Capture app is not running"* → open the app from Applications.
+- *A shortcut does nothing* → another app may use it. Change it in *Settings…*.
+- *macOS says the app can't be opened* → you probably received a built copy. Right-click it → *Open*, or build it yourself (step 1).
+
+**Feedback.** Open an [issue](https://github.com/dylanphan-pd/flow-capture/issues) with your macOS version, what you pressed, and what you expected.
+
 ## Install as an app (recommended)
 ```
 ./scripts/build-app.sh
