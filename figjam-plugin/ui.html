@@ -1,14 +1,14 @@
 <style>
-  /* Flow Capture panel — matches the "Frame 12 / 13 / 14" specs in the design file (320 × 480).
-     Tokens come from the design variables; Inter replaces Google Sans. */
+  /* Flow Capture panel (320 × 480). Three states: empty, flows + history open, layout open.
+     Colours are defined once below as CSS variables; the font is Inter. */
   :root {
-    --primary: #006ad9;            /* colorPrimary, color/foreground/brand/primary/medium/default */
-    --text: rgba(0,0,0,.88);       /* colorText */
-    --fg: #1a1a1a;                 /* color/foreground/neutral/primary/default */
-    --fg-tertiary: #808080;        /* color/foreground/neutral/tertiary/default */
-    --border: #d9d9d9;             /* colorBorder */
-    --bg-secondary: #f7f7f7;       /* color/background/neutral/secondary/default */
-    --success: #00bf1a;            /* colorSuccessBase */
+    --primary: #006ad9;            /* brand blue */
+    --text: rgba(0,0,0,.88);       /* body text */
+    --fg: #1a1a1a;                 /* headings */
+    --fg-tertiary: #808080;        /* secondary text and buttons */
+    --border: #d9d9d9;             /* borders */
+    --bg-secondary: #f7f7f7;       /* cards and footer */
+    --success: #00bf1a;            /* connected */
     --error: #ff4d4f;
     --warning: #faad14;
   }
@@ -76,7 +76,7 @@
   label.check input { position: absolute; opacity: 0; width: 0; height: 0; }
   .box { flex: none; width: 16px; height: 16px; margin-top: 3px; border: 1px solid var(--border); border-radius: 4px; background: #fff; }
   input:checked + .box { background: var(--primary) url("data:image/svg+xml,%3Csvg%20preserveAspectRatio%3D%22none%22%20overflow%3D%22visible%22%20style%3D%22display%3A%20block%3B%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cg%20id%3D%22CheckOutlined%22%3E%0A%3Cpath%20id%3D%22Vector%22%20d%3D%22M4.775%207.575L9.0125%203.3375C9.1125%203.2375%209.22917%203.1875%209.3625%203.1875C9.49583%203.1875%209.6125%203.2375%209.7125%203.3375C9.8125%203.4375%209.8625%203.55625%209.8625%203.69375C9.8625%203.83125%209.8125%203.95%209.7125%204.05L5.125%208.65C5.025%208.75%204.90833%208.8%204.775%208.8C4.64167%208.8%204.525%208.75%204.425%208.65L2.275%206.5C2.175%206.4%202.12708%206.28125%202.13125%206.14375C2.13542%206.00625%202.1875%205.8875%202.2875%205.7875C2.3875%205.6875%202.50625%205.6375%202.64375%205.6375C2.78125%205.6375%202.9%205.6875%203%205.7875L4.775%207.575Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E") center / 12px 12px no-repeat; border-color: var(--primary); }
-  /* Inter is ~6% wider than the design's Google Sans; slight tracking keeps this long label on one line like the design. */
+  /* Slight tracking keeps this long label on one line at 14px Inter. */
   label.check .lbl { padding: 0 8px; white-space: nowrap; letter-spacing: -.28px; }
   .cb .box { margin-top: 0; }
 
@@ -176,7 +176,7 @@
 </div>
 
 <script>
-  // Icons are the exact exports from the design (KeyboardArrowDown/Up, RemoveFilled, Divider).
+  // Inline SVG icons: chevron down / up, minus, and the divider line.
   const ICON = {
     down: "data:image/svg+xml,%3Csvg%20preserveAspectRatio%3D%22none%22%20overflow%3D%22visible%22%20style%3D%22display%3A%20block%3B%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cg%20id%3D%22KeyboardArrowDownOutlined%22%3E%0A%3Cpath%20id%3D%22Vector%22%20d%3D%22M7.75%209.94167C7.67222%209.91389%207.6%209.86667%207.53333%209.8L4.46667%206.73333C4.34444%206.61111%204.28333%206.45556%204.28333%206.26667C4.28333%206.07778%204.34444%205.92222%204.46667%205.8C4.58889%205.67778%204.74444%205.61667%204.93333%205.61667C5.12222%205.61667%205.27778%205.67778%205.4%205.8L8%208.4L10.6%205.8C10.7222%205.67778%2010.8778%205.61667%2011.0667%205.61667C11.2556%205.61667%2011.4111%205.67778%2011.5333%205.8C11.6556%205.92222%2011.7167%206.07778%2011.7167%206.26667C11.7167%206.45556%2011.6556%206.61111%2011.5333%206.73333L8.46667%209.8C8.4%209.86667%208.32778%209.91389%208.25%209.94167C8.17222%209.96944%208.08889%209.98333%208%209.98333C7.91111%209.98333%207.82778%209.96944%207.75%209.94167Z%22%20fill%3D%22%23808080%22%2F%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E", up: "data:image/svg+xml,%3Csvg%20preserveAspectRatio%3D%22none%22%20overflow%3D%22visible%22%20style%3D%22display%3A%20block%3B%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cg%20id%3D%22KeyboardArrowUpOutlined%22%3E%0A%3Cpath%20id%3D%22Vector%22%20d%3D%22M8%207.2L5.4%209.8C5.27778%209.92222%205.12222%209.98333%204.93333%209.98333C4.74444%209.98333%204.58889%209.92222%204.46667%209.8C4.34444%209.67778%204.28333%209.52222%204.28333%209.33333C4.28333%209.14444%204.34444%208.98889%204.46667%208.86667L7.53333%205.8C7.66667%205.66667%207.82222%205.6%208%205.6C8.17778%205.6%208.33333%205.66667%208.46667%205.8L11.5333%208.86667C11.6556%208.98889%2011.7167%209.14444%2011.7167%209.33333C11.7167%209.52222%2011.6556%209.67778%2011.5333%209.8C11.4111%209.92222%2011.2556%209.98333%2011.0667%209.98333C10.8778%209.98333%2010.7222%209.92222%2010.6%209.8L8%207.2Z%22%20fill%3D%22%23808080%22%2F%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E", minus: "data:image/svg+xml,%3Csvg%20preserveAspectRatio%3D%22none%22%20overflow%3D%22visible%22%20style%3D%22display%3A%20block%3B%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2014%2014%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cg%20id%3D%22RemoveFilled%22%3E%0A%3Cpath%20id%3D%22Vector%22%20d%3D%22M3.5%207.58333C3.33472%207.58333%203.19618%207.52743%203.08438%207.41562C2.97257%207.30382%202.91667%207.16528%202.91667%207C2.91667%206.83472%202.97257%206.69618%203.08438%206.58437C3.19618%206.47257%203.33472%206.41667%203.5%206.41667H10.5C10.6653%206.41667%2010.8038%206.47257%2010.9156%206.58437C11.0274%206.69618%2011.0833%206.83472%2011.0833%207C11.0833%207.16528%2011.0274%207.30382%2010.9156%207.41562C10.8038%207.52743%2010.6653%207.58333%2010.5%207.58333H3.5Z%22%20fill%3D%22black%22%20fill-opacity%3D%220.88%22%2F%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E", divider: "data:image/svg+xml,%3Csvg%20preserveAspectRatio%3D%22none%22%20overflow%3D%22visible%22%20style%3D%22display%3A%20block%3B%22%20width%3D%22600%22%20height%3D%2232%22%20viewBox%3D%220%200%20600%2032%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cg%20id%3D%22Divider%2FHoriztontal%22%3E%0A%3Cline%20id%3D%22divider%22%20y1%3D%2215.5%22%20x2%3D%22600%22%20y2%3D%2215.5%22%20stroke%3D%22%23EEEFF1%22%2F%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E",
   };
