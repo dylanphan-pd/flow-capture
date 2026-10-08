@@ -6,7 +6,7 @@ macOS menu bar app for capturing UX flow steps, plus a FigJam plugin that receiv
 
 > Early test version. Expect rough edges, and please tell me what breaks (see *Feedback* below).
 
-**You need:** a Mac on macOS 13 or later, the [Figma desktop app](https://www.figma.com/downloads/) (the plugin is imported from a file, which only works in the desktop app), and Apple's free command line tools: run `xcode-select --install` once if you've never built anything on this Mac.
+**You need:** a Mac on macOS 13 or later, the [Figma desktop app](https://www.figma.com/downloads/) (the plugin is imported from a file, which only works in the desktop app), and Apple's small, free command line tools (you do **not** need the full Xcode app): run `xcode-select --install` once if you've never built anything on this Mac.
 
 **1. Build and install the Mac app**
 ```
@@ -28,6 +28,11 @@ A camera icon appears in the menu bar (there is no Dock icon). *Build it yoursel
 **5. Try a flow.** Press **⌥1** on any app or browser window, add a sticky (`S`) or arrow (`A`), press **⏎**. Repeat for a few steps, then **⌥3** to finish the flow. In FigJam press **Place flow(s)**.
 
 **Troubleshooting**
+- *Building stops with "Symbol not found" or "dyld" (mentions `swift-package` or `llbuild`)* → Apple's command line tools on your Mac are damaged or out of date. Reinstall them, then build again:
+  ```
+  sudo rm -rf /Library/Developer/CommandLineTools
+  xcode-select --install
+  ```
 - *Screenshot shows only the wallpaper* → Screen Recording isn't allowed yet (step 2), or you haven't reopened the app since allowing it.
 - *Plugin says "Flow Capture app is not running"* → open the app from Applications.
 - *A shortcut does nothing* → another app may use it. Change it in *Settings…*.

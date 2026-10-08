@@ -7,6 +7,24 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# A broken or half-updated copy of Apple's command line tools crashes with "dyld: Symbol not found ... swift-package".
+# Check for that first and explain the fix in plain words.
+if ! swift package --version >/dev/null 2>&1; then
+  cat <<'MSG'
+
+Apple's build tools on this Mac look damaged or out of date, so the app can't be built yet.
+This is a known macOS problem (often after an update) and not something you did.
+
+Fix: reinstall the tools. Paste these two lines one at a time (the first asks for your Mac password):
+
+    sudo rm -rf /Library/Developer/CommandLineTools
+    xcode-select --install
+
+Click Install in the pop-up, wait for it to finish, then run this script again.
+MSG
+  exit 1
+fi
+
 APP_NAME="Flow Capture"
 EXECUTABLE="FlowCapture"
 BUNDLE_ID="${BUNDLE_ID:-com.flowcapture.app}"
