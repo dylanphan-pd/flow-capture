@@ -31,13 +31,21 @@ BUNDLE_ID="${BUNDLE_ID:-com.flowcapture.app}"
 VERSION="${VERSION:-0.1.0}"
 APP="dist/$APP_NAME.app"
 
-echo "→ Building release binary"
-swift build -c release
+# UNIVERSAL=1 builds one app that runs on both Apple Silicon and Intel Macs (used for downloadable releases).
+ARCH_FLAGS=""
+[ "${UNIVERSAL:-0}" = "1" ] && ARCH_FLAGS="--arch arm64 --arch x86_64"
+
+echo "→ Building release binary ${ARCH_FLAGS:+(universal)}"
+swift build -c release $ARCH_FLAGS
+BIN_DIR="$(swift build -c release $ARCH_FLAGS --show-bin-path)"
 
 echo "→ Assembling $APP"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp ".build/release/$EXECUTABLE" "$APP/Contents/MacOS/$EXECUTABLE"
+cp "$BIN_DIR/$EXECUTABLE" "$APP/Contents/MacOS/$EXECUTABLE"
+
+echo "→ Bundling the FigJam plugin"
+cp -R figjam-plugin "$APP/Contents/Resources/figjam-plugin"
 
 echo "→ Drawing the icon"
 ICONSET="$(mktemp -d)/AppIcon.iconset"

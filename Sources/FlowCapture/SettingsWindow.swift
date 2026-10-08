@@ -7,6 +7,7 @@ final class SettingsWindowController {
         var shortcutsChanged: () -> [ShortcutAction]      // re-registers hotkeys; returns the ones that could not be registered
         var recording: (Bool) -> Void                     // pause global hotkeys while a shortcut is being recorded
         var copyToken: () -> Void
+        var showPluginFiles: () -> Void
         var clearSent: () -> Void
         var openFolder: () -> Void
         var storageText: () -> String
@@ -92,7 +93,9 @@ final class SettingsWindowController {
 
         stack.addArrangedSubview(NSBox.separator())
         stack.addArrangedSubview(header("FigJam"))
-        stack.addArrangedSubview(button("Copy Connection Token", #selector(copyToken)))
+        let figjamRow = NSStackView(views: [button("Copy Connection Token", #selector(copyToken)), button("Show Plugin Files", #selector(showPluginFiles))])
+        figjamRow.spacing = 8
+        stack.addArrangedSubview(figjamRow)
 
         stack.addArrangedSubview(NSBox.separator())
         stack.addArrangedSubview(header("Storage"))
@@ -134,6 +137,7 @@ final class SettingsWindowController {
     }
     @objc private func toggleRemember(_ sender: NSButton) { Prefs.rememberSelection = sender.state == .on }
     @objc private func copyToken() { hooks.copyToken() }
+    @objc private func showPluginFiles() { hooks.showPluginFiles() }
     @objc private func clearSent() { hooks.clearSent(); storageLabel.stringValue = hooks.storageText() }
     @objc private func openFolder() { hooks.openFolder() }
 }

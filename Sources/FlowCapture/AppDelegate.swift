@@ -46,6 +46,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             shortcutsChanged: { [weak self] in self?.registerHotkeys() ?? [] },
             recording: { [weak self] on in if on { HotKey.unregisterAll() } else { _ = self?.registerHotkeys() } },
             copyToken: { [weak self] in self?.copyToken() },
+            showPluginFiles: { [weak self] in self?.showPluginFiles() },
             clearSent: { [weak self] in self?.clearSent() },
             openFolder: { [weak self] in self?.openFolder() },
             storageText: { "\(AppDelegate.mb(Store.shared.totalBytes())) used  ·  \(Store.shared.sentStats().count) already sent to FigJam" }
@@ -412,4 +413,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func openFolder() { NSWorkspace.shared.open(Store.shared.dir) }
+
+    /// Puts the FigJam plugin in a folder that does not move when the app is updated, copies the path of its
+    /// manifest to the clipboard (paste it into Figma's file picker with ⌘⇧G), and shows it in Finder.
+    private func showPluginFiles() {
+        let fm = FileManager.default
+        func tell(_ title: String, _ text: String) {
+            let a = NSAlert(); a.messageText = title; a.informativeText = text
+            NSApp.activate(ignoringOtherApps: true); a.runModal()
+        }
+        guard let bundled = Bundle.main.resourceURL?.appendingPathComponent("figjam-plugin"), fm.fileExists(atPath: bundled.path) else {
+            return tell("Plugin files not found", "This copy of the app was started from source, so it has no bundled plugin. Use the figjam-plugin folder in the project instead.")
+        }
+        let dest = Store.shared.dir.appendingPathComponent("FigJam Plugin", isDirectory: true)
+        do {
+            try? fm.removeItem(at: dest)          // always the plugin that matches this version of the app
+            try fm.copyItem(at: bundled, to: dest)
+        } catch {
+            return tell("Could not copy the plugin", error.localizedDescription)
+        }
+        let manifest = dest.appendingPathComponent("manifest.json")
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(manifest.path, forType: .string)
+        NSWorkspace.shared.activateFileViewerSelecting([manifest])
+        tell("Plugin location copied", "In Figma choose Plugins → Development → Import plugin from manifest…, press ⌘⇧G, paste (⌘V), press Return, then click Open.")
+    }
 }

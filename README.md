@@ -6,9 +6,13 @@ macOS menu bar app for capturing UX flow steps, plus a FigJam plugin that receiv
 
 > Early test version. Expect rough edges, and please tell me what breaks (see *Feedback* below).
 
-**You need:** a Mac on macOS 13 or later, the [Figma desktop app](https://www.figma.com/downloads/) (the plugin is imported from a file, which only works in the desktop app), and Apple's small, free command line tools (you do **not** need the full Xcode app): run `xcode-select --install` once if you've never built anything on this Mac.
+**You need:** a Mac on macOS 13 or later and the [Figma desktop app](https://www.figma.com/downloads/) (plugins are imported from a file, which only works in the desktop app).
 
-**1. Build and install the Mac app**
+**1. Get the Mac app: pick one**
+
+*Easiest: download it.* Get **Flow-Capture.zip** from the [Releases page](https://github.com/dylanphan-pd/flow-capture/releases/latest), unzip it, and drag **Flow Capture** into Applications. The first time you open it, macOS warns that it can't verify the app (it isn't from the App Store). Click *Done*, then open **System Settings → Privacy & Security**, scroll to the message about Flow Capture and click **Open Anyway**. You only do this once. (On older macOS: right-click the app → *Open* → *Open*.)
+
+*Or build it yourself.* This needs Apple's small command line tools (not the full Xcode app): run `xcode-select --install` once if you've never built anything on this Mac.
 ```
 git clone https://github.com/dylanphan-pd/flow-capture.git
 cd flow-capture
@@ -17,11 +21,13 @@ cd flow-capture
 ```
 cp -R "dist/Flow Capture.app" /Applications/ && open "/Applications/Flow Capture.app"
 ```
-A camera icon appears in the menu bar (there is no Dock icon). *Build it yourself rather than downloading someone else's build: an app you build on your own Mac opens without warnings.*
+An app you build on your own Mac opens without the warning above.
+
+Either way, a camera icon appears in the menu bar (there is no Dock icon).
 
 **2. Allow permissions (once).** Press **⌥1** to capture. macOS asks for *Screen Recording*: switch on **Flow Capture** in System Settings → Privacy & Security → Screen Recording, then quit the app from its menu and open it again. Window resizing separately asks for *Accessibility*.
 
-**3. Add the FigJam plugin.** In the Figma desktop app, open any FigJam board → *Plugins* → *Development* → *Import plugin from manifest…* → choose `figjam-plugin/manifest.json` from the folder you cloned.
+**3. Add the FigJam plugin.** In the Mac app's menu: *Settings…* → **Show Plugin Files** (this puts the plugin in a folder that stays put, copies the location of `manifest.json`, and shows it in Finder). In the Figma desktop app, open any FigJam board → *Plugins* → *Development* → *Import plugin from manifest…*, press **⌘⇧G**, paste (**⌘V**), press Return, then *Open*.
 
 **4. Pair the two.** In the Mac app's menu: *Settings…* → *Copy Connection Token*. Run the plugin (*Plugins* → *Development* → *Flow Capture Receiver*) and paste the token. The footer turns green and says *Connected*.
 
@@ -36,7 +42,7 @@ A camera icon appears in the menu bar (there is no Dock icon). *Build it yoursel
 - *Screenshot shows only the wallpaper* → Screen Recording isn't allowed yet (step 2), or you haven't reopened the app since allowing it.
 - *Plugin says "Flow Capture app is not running"* → open the app from Applications.
 - *A shortcut does nothing* → another app may use it. Change it in *Settings…*.
-- *macOS says the app can't be opened* → you probably received a built copy. Right-click it → *Open*, or build it yourself (step 1).
+- *macOS says "Apple could not verify…" or the app can't be opened* → normal for a downloaded copy. Use **System Settings → Privacy & Security → Open Anyway**, or run `xattr -dr com.apple.quarantine "/Applications/Flow Capture.app"` and open it again. Or build it yourself (step 1).
 
 **Feedback.** Open an [issue](https://github.com/dylanphan-pd/flow-capture/issues) with your macOS version, what you pressed, and what you expected.
 
@@ -59,6 +65,12 @@ SIGN_IDENTITY="Your Certificate Name" ./scripts/build-app.sh
 **Upgrading from the terminal version.** On first launch the app copies your saved settings, shortcuts, trims and FigJam token across, and your captures stay where they were (`~/Library/Application Support/FlowCapture`). Quit the terminal copy first, since only one copy can own the hotkeys.
 
 **Sharing it.** A build you make yourself opens normally on your Mac. For other people's Macs, macOS will warn about an unidentified developer unless the app is signed with an Apple Developer ID and notarized (paid developer account).
+
+## Publishing a download (for the maintainer)
+```
+./scripts/make-release.sh
+```
+This builds one app that runs on both Apple Silicon and Intel Macs and writes `dist/Flow-Capture.zip`. On GitHub open *Releases → Draft a new release*, create a tag such as `v0.1.0`, drag the zip in, and publish. Keep the file name `Flow-Capture.zip`: the link `https://github.com/dylanphan-pd/flow-capture/releases/latest/download/Flow-Capture.zip` then always serves the newest version. The app is signed ad hoc (no Apple Developer account), which is why downloaders see the one-time "Open Anyway" step. Removing it requires signing with a Developer ID and notarizing (paid Apple account).
 
 ## Run from source
 ```
